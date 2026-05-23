@@ -42,6 +42,7 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 - 飞书CLI官方引导：https://www.feishu.cn/content/article/7623291503305083853
 - 单飞书员工：按官方式默认 profile 配置，不使用代称。
 - 多飞书员工：每个飞书一个 profile，用 `<PROFILE>` 占位符，实际填团队约定的 profile 名称。
+- profile 名称建议只用小写英文、数字、短横线或下划线，例如 `company_a`、`work`、`personal`。
 - 开始前确认本机能使用 `npm` 和 `npx`；如果不能用，先安装 Node.js。
 - App Secret 只能在本机终端隐藏输入；不要写进聊天、文档、命令历史或 Skill。
 - 授权命令只使用 `auth login --scope`。
@@ -68,6 +69,8 @@ lark-cli --version
 
 macOS Terminal（zsh）：
 
+复制下面命令到终端执行后，终端会提示输入 `App Secret`；用户在终端输入或粘贴即可，输入内容不会显示在屏幕上。
+
 ```zsh
 read -s "APP_SECRET?App Secret: "
 printf '\n'
@@ -76,6 +79,8 @@ unset APP_SECRET
 ```
 
 Windows PowerShell：
+
+复制下面命令到 PowerShell 执行后，终端会提示输入 `App Secret`；用户在终端输入或粘贴即可，输入内容不会显示在屏幕上。
 
 ```powershell
 $AppSecret = Read-Host -Prompt "App Secret" -AsSecureString
@@ -143,8 +148,11 @@ lark-cli --version
 ### 步骤 3：初始化配置
 
 只输出一份初始化模板。把 `<PROFILE>` 替换为团队约定的 profile 名称，把 `<APP_ID>` 替换为对应飞书的 App ID。
+profile 名称建议只用小写英文、数字、短横线或下划线，例如 `company_a`。
 
 macOS Terminal（zsh）：
+
+复制下面命令到终端执行后，终端会提示输入 `<PROFILE> App Secret`；用户在终端输入或粘贴即可，输入内容不会显示在屏幕上。
 
 ```zsh
 read -s "APP_SECRET?<PROFILE> App Secret: "
@@ -153,7 +161,18 @@ printf '%s\n' "$APP_SECRET" | lark-cli config init --name <PROFILE> --brand feis
 unset APP_SECRET
 ```
 
+macOS 示例，假设 profile 名称是 `company_a`，App ID 是 `cli_xxxxxxxxxxxxxxxx`：
+
+```zsh
+read -s "APP_SECRET?company_a App Secret: "
+printf '\n'
+printf '%s\n' "$APP_SECRET" | lark-cli config init --name company_a --brand feishu --app-id "cli_xxxxxxxxxxxxxxxx" --app-secret-stdin
+unset APP_SECRET
+```
+
 Windows PowerShell：
+
+复制下面命令到 PowerShell 执行后，终端会提示输入 `<PROFILE> App Secret`；用户在终端输入或粘贴即可，输入内容不会显示在屏幕上。
 
 ```powershell
 $AppSecret = Read-Host -Prompt "<PROFILE> App Secret" -AsSecureString
