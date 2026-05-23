@@ -1,0 +1,4 @@
+interface:
+  display_name: "安装飞书 CLI"
+  short_description: "输出员工可复制的飞书 CLI 安装与授权命令"
+  default_prompt: "使用 $feishu_installCli_skill 输出员工可复制的飞书 CLI 安装、初始化与 scope 授权命令。"
