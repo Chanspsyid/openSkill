@@ -43,3 +43,4 @@ npx -y skills add . -g --skill feishu_installCli_skill --agent '*' -y
 
 - Skill 里的 `<APP_ID>`、`App Secret`、`scope` 需要按自己的飞书应用替换。
 - App Secret 不要发到聊天、文档或 GitHub。
+- 内部标准 scope 清单不要提交到公开仓库。
