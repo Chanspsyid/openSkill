@@ -14,10 +14,16 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 - 如果用户已经主动说明设备类型或飞书数量，只询问缺失项。
 - 每次只输出当前步骤的命令和一句操作说明；步骤结束必须引导用户把执行结果告诉 Agent，无论成功或失败。
 - 在确认用户已完成当前步骤目标前，不能进入下一步；如果用户贴出错误，先解释错误并继续处理当前步骤。
+- 如果用户执行报错，停留在当前步骤，要求用户发送终端截图或完整文本报错；Agent 负责根据截图或报错继续排查，直到当前步骤成功后再进入下一步。
 - 如果 Agent 具备本机命令执行能力，优先由 Agent 执行安装、检查、验证命令；如果不能执行，再让用户打开终端复制命令。
 - 需要浏览器授权时，给用户授权链接并等待用户完成。
 - 不要让用户把 App Secret 发到聊天里；只给本机隐藏输入方式。
+- 用户手动替换命令占位符后，先让用户把修改后的命令发给 Agent 确认；Agent 检查无误后，再让用户执行。
+- Agent 检查修改后的命令时，至少确认：没有 `APP_ID_HERE` / `PROFILE_NAME_HERE` / `PASTE_SCOPE_GROUP_A_HERE` 等占位符，没有左尖括号或右尖括号，App ID 以 `cli_` 开头，多飞书命令使用 `--profile PROFILE_NAME` 而不是 `-- PROFILE_NAME`。
+- 检查命令时不得要求用户发送 App Secret；初始化命令只包含 App ID 和 profile，App Secret 由终端隐藏输入。
 - scope 授权一次只输出一组命令；A 组完成后再输出 B 组。
+- 输出给员工的命令使用 `APP_ID_HERE`、`PROFILE_NAME_HERE` 这类占位符，避免使用尖括号包住 APP_ID 这类写法。
+- 如果用户从其他资料看到尖括号包住的内容，必须提醒：左右尖括号也是占位符的一部分，替换后命令里不能留下尖括号。
 
 首次回复模板：
 
@@ -34,15 +40,16 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 每一步结尾固定加一句：
 
 ```text
-执行后把结果发给我；成功或失败都可以。确认这一步完成后，我再带你做下一步。
+如果这一步需要你替换命令内容，先把改好的命令发给我确认，不要发 App Secret。我确认后你再执行。执行后把结果发给我；成功发结果，失败请发终端截图或完整报错。确认这一步完成后，我再带你做下一步。
 ```
 
 ## 基本规则
 
 - 飞书CLI官方引导：https://www.feishu.cn/content/article/7623291503305083853
 - 单飞书员工：按官方式默认 profile 配置，不使用代称。
-- 多飞书员工：每个飞书一个 profile，用 `<PROFILE>` 占位符，实际填团队约定的 profile 名称。
+- 多飞书员工：每个飞书一个 profile，用 `PROFILE_NAME_HERE` 占位符，实际填团队约定的 profile 名称。
 - profile 名称建议只用小写英文、数字、短横线或下划线，例如 `company_a`、`work`、`personal`。
+- 占位符要整段替换。例如把 `APP_ID_HERE` 替换为 `cli_xxxxxxxxxxxxxxxx`，不要把 `APP_ID_HERE` 留在命令里。
 - 开始前确认本机能使用 `npm` 和 `npx`；如果不能用，先安装 Node.js。
 - App Secret 只能在本机终端隐藏输入；不要写进聊天、文档、命令历史或 Skill。
 - 授权命令只使用 `auth login --scope`。
@@ -74,7 +81,7 @@ macOS Terminal（zsh）：
 ```zsh
 read -s "APP_SECRET?App Secret: "
 printf '\n'
-printf '%s\n' "$APP_SECRET" | lark-cli config init --brand feishu --app-id "<APP_ID>" --app-secret-stdin
+printf '%s\n' "$APP_SECRET" | lark-cli config init --brand feishu --app-id "APP_ID_HERE" --app-secret-stdin
 unset APP_SECRET
 ```
 
@@ -87,7 +94,7 @@ $AppSecret = Read-Host -Prompt "App Secret" -AsSecureString
 $Bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($AppSecret)
 try {
   $PlainSecret = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($Bstr)
-  $PlainSecret | lark-cli config init --brand feishu --app-id "<APP_ID>" --app-secret-stdin
+  $PlainSecret | lark-cli config init --brand feishu --app-id "APP_ID_HERE" --app-secret-stdin
 } finally {
   if ($Bstr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($Bstr) }
   Remove-Variable AppSecret, PlainSecret -ErrorAction SilentlyContinue
@@ -107,18 +114,18 @@ lark-cli profile list
 Scope A：
 
 ```zsh
-SCOPES_A='<PASTE_SCOPE_GROUP_A>'
+SCOPES_A='PASTE_SCOPE_GROUP_A_HERE'
 lark-cli auth login --scope "$SCOPES_A"
 ```
 
 Scope B：
 
 ```zsh
-SCOPES_B='<PASTE_SCOPE_GROUP_B>'
+SCOPES_B='PASTE_SCOPE_GROUP_B_HERE'
 lark-cli auth login --scope "$SCOPES_B"
 ```
 
-Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='<PASTE_SCOPE_GROUP_A>'` 改成 `$SCOPES_A = '<PASTE_SCOPE_GROUP_A>'`，命令改成 `lark-cli auth login --scope $SCOPES_A`。
+Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='PASTE_SCOPE_GROUP_A_HERE'` 改成 `$SCOPES_A = 'PASTE_SCOPE_GROUP_A_HERE'`，命令改成 `lark-cli auth login --scope $SCOPES_A`。
 
 ### 步骤 6：验证
 
@@ -147,17 +154,17 @@ lark-cli --version
 
 ### 步骤 3：初始化配置
 
-只输出一份初始化模板。把 `<PROFILE>` 替换为团队约定的 profile 名称，把 `<APP_ID>` 替换为对应飞书的 App ID。
+只输出一份初始化模板。把 `PROFILE_NAME_HERE` 替换为团队约定的 profile 名称，把 `APP_ID_HERE` 替换为对应飞书的 App ID。
 profile 名称建议只用小写英文、数字、短横线或下划线，例如 `company_a`。
 
 macOS Terminal（zsh）：
 
-复制下面命令到终端执行后，终端会提示输入 `<PROFILE> App Secret`；用户在终端输入或粘贴即可，输入内容不会显示在屏幕上。
+复制下面命令到终端执行后，终端会提示输入 `PROFILE_NAME_HERE App Secret`；用户在终端输入或粘贴即可，输入内容不会显示在屏幕上。
 
 ```zsh
-read -s "APP_SECRET?<PROFILE> App Secret: "
+read -s "APP_SECRET?PROFILE_NAME_HERE App Secret: "
 printf '\n'
-printf '%s\n' "$APP_SECRET" | lark-cli config init --name <PROFILE> --brand feishu --app-id "<APP_ID>" --app-secret-stdin
+printf '%s\n' "$APP_SECRET" | lark-cli config init --name PROFILE_NAME_HERE --brand feishu --app-id "APP_ID_HERE" --app-secret-stdin
 unset APP_SECRET
 ```
 
@@ -172,14 +179,14 @@ unset APP_SECRET
 
 Windows PowerShell：
 
-复制下面命令到 PowerShell 执行后，终端会提示输入 `<PROFILE> App Secret`；用户在终端输入或粘贴即可，输入内容不会显示在屏幕上。
+复制下面命令到 PowerShell 执行后，终端会提示输入 `PROFILE_NAME_HERE App Secret`；用户在终端输入或粘贴即可，输入内容不会显示在屏幕上。
 
 ```powershell
-$AppSecret = Read-Host -Prompt "<PROFILE> App Secret" -AsSecureString
+$AppSecret = Read-Host -Prompt "PROFILE_NAME_HERE App Secret" -AsSecureString
 $Bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($AppSecret)
 try {
   $PlainSecret = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($Bstr)
-  $PlainSecret | lark-cli config init --name <PROFILE> --brand feishu --app-id "<APP_ID>" --app-secret-stdin
+  $PlainSecret | lark-cli config init --name PROFILE_NAME_HERE --brand feishu --app-id "APP_ID_HERE" --app-secret-stdin
 } finally {
   if ($Bstr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($Bstr) }
   Remove-Variable AppSecret, PlainSecret -ErrorAction SilentlyContinue
@@ -199,25 +206,25 @@ lark-cli profile list
 Scope A：
 
 ```zsh
-SCOPES_A='<PASTE_SCOPE_GROUP_A>'
-lark-cli --profile <PROFILE> auth login --scope "$SCOPES_A"
+SCOPES_A='PASTE_SCOPE_GROUP_A_HERE'
+lark-cli --profile PROFILE_NAME_HERE auth login --scope "$SCOPES_A"
 ```
 
 Scope B：
 
 ```zsh
-SCOPES_B='<PASTE_SCOPE_GROUP_B>'
-lark-cli --profile <PROFILE> auth login --scope "$SCOPES_B"
+SCOPES_B='PASTE_SCOPE_GROUP_B_HERE'
+lark-cli --profile PROFILE_NAME_HERE auth login --scope "$SCOPES_B"
 ```
 
-Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='<PASTE_SCOPE_GROUP_A>'` 改成 `$SCOPES_A = '<PASTE_SCOPE_GROUP_A>'`，命令改成 `lark-cli --profile <PROFILE> auth login --scope $SCOPES_A`。
+Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='PASTE_SCOPE_GROUP_A_HERE'` 改成 `$SCOPES_A = 'PASTE_SCOPE_GROUP_A_HERE'`，命令改成 `lark-cli --profile PROFILE_NAME_HERE auth login --scope $SCOPES_A`。
 
 ### 步骤 6：验证
 
 官方基础验证命令是 `auth status`；这里使用 `--verify` 做更完整检查。
 
 ```shell
-lark-cli --profile <PROFILE> auth status --verify
+lark-cli --profile PROFILE_NAME_HERE auth status --verify
 ```
 
 ## 权限列表转命令提示词
@@ -230,7 +237,7 @@ lark-cli --profile <PROFILE> auth status --verify
 我的场景：
 - 终端：Mac Terminal（zsh）/ Windows PowerShell
 - 是否多飞书：单飞书 / 多飞书
-- profile 名称：<PROFILE>（单飞书留空；多飞书必填）
+- profile 名称：PROFILE_NAME_HERE（单飞书留空；多飞书必填）
 
 要求：
 1. 只生成 `lark-cli auth login --scope` 命令，不要使用 `--recommend`、`--no-wait`、`--json`。
@@ -238,10 +245,10 @@ lark-cli --profile <PROFILE> auth status --verify
 3. 如果不是 JSON，按管理员标注为“用户授权”的 scope 处理；不确定时先提醒我确认。
 4. 去重并保留原 scope 字符串，不翻译、不改名。
 5. 如果 scope 超过 120 个，拆成 Scope A/B/C 多组，每组一条命令。
-6. 单飞书命令不要带 `--profile`；多飞书命令必须带 `--profile <PROFILE>`。
+6. 单飞书命令不要带 `--profile`；多飞书命令必须带 `--profile PROFILE_NAME_HERE`。
 7. 按我填写的终端只输出一种命令格式。
 8. 只输出命令块和必要标题，不要解释。
 
 权限列表：
-<PASTE_ADMIN_SCOPE_LIST_HERE>
+PASTE_ADMIN_SCOPE_LIST_HERE
 ```
