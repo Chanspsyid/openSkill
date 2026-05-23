@@ -45,6 +45,8 @@ npx -y skills add . -g --skill feishu_installCli_skill --agent '*' -y
 
 ## 注意
 
-- Skill 里的 `<APP_ID>`、`App Secret`、`scope` 需要按自己的飞书应用替换。
+- Skill 里的 `APP_ID_HERE`、`PROFILE_NAME_HERE`、`PASTE_SCOPE_GROUP_A_HERE` 等占位符需要按自己的飞书应用替换。
+- 如果其他资料里出现用尖括号包住 APP ID 的写法，左右尖括号也是占位符的一部分，替换后不要保留。
+- 员工替换命令后，建议先发给 Agent 确认，再执行；不要把 App Secret 发给 Agent。
 - App Secret 不要发到聊天、文档或 GitHub。
 - 内部标准 scope 清单不要提交到公开仓库。
