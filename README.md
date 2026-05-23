@@ -39,6 +39,10 @@ npx -y skills add . -g --skill feishu_installCli_skill --agent '*' -y
 使用 $feishu_installCli_skill 输出飞书 CLI 安装和授权命令
 ```
 
+## 将管理员 scope 转成命令
+
+拿到管理员发的权限列表后，可以把 `feishu_installCli_skill/SKILL.md` 里的“权限列表转命令提示词”复制给 AI，让 AI 生成可直接执行的 `auth login --scope` 命令。
+
 ## 注意
 
 - Skill 里的 `<APP_ID>`、`App Secret`、`scope` 需要按自己的飞书应用替换。
