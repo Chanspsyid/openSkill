@@ -25,6 +25,7 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 - scope 授权一次只输出一组命令；A 组完成后再输出 B 组。
 - 输出给员工的命令使用 `APP_ID_HERE`、`PROFILE_NAME_HERE` 这类占位符，避免使用尖括号包住 APP_ID 这类写法。
 - 如果用户从其他资料看到尖括号包住的内容，必须提醒：左右尖括号也是占位符的一部分，替换后命令里不能留下尖括号。
+- 每完成一个飞书的初始化和授权后，必须先查看当前安装情况，再决定继续配置下一个飞书或结束。
 - 授权验证通过后，可以提供可选验收案例；验收案例会真实创建日程，必须先征得用户明确同意，不能作为默认必做步骤。
 
 首次回复模板：
@@ -140,6 +141,20 @@ Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='PASTE_SCOP
 lark-cli auth status --verify
 ```
 
+### 步骤 7：查看当前安装情况
+
+```shell
+lark-cli profile list
+lark-cli auth status --verify
+```
+
+Agent 需要确认：
+
+- `profile list` 能看到当前飞书配置。
+- `appId` 以 `cli_` 开头，且没有占位符或尖括号。
+- `auth status --verify` 返回 `verified: true`，用户身份可用。
+- 如果用户只连接 1 个飞书，说明安装完成；再询问是否需要执行可选验收案例。
+
 ## 场景 2：多飞书员工
 
 ### 步骤 1：确认执行方式
@@ -231,6 +246,25 @@ Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='PASTE_SCOP
 ```shell
 lark-cli --profile PROFILE_NAME_HERE auth status --verify
 ```
+
+### 步骤 7：查看当前安装情况
+
+每完成一个飞书的授权后，都必须先执行当前安装情况检查。
+
+```shell
+lark-cli profile list
+lark-cli --profile PROFILE_NAME_HERE auth status --verify
+```
+
+Agent 需要确认：
+
+- `profile list` 能看到刚配置的 profile。
+- 当前 profile 的 `appId` 以 `cli_` 开头，且没有占位符或尖括号。
+- 当前 profile 的 `auth status --verify` 返回 `verified: true`，用户身份可用。
+- 用简短文字告诉用户当前已完成哪个 profile。
+- 然后询问用户：继续配置下一个飞书，还是结束安装。
+- 如果继续配置下一个飞书，回到本场景步骤 3，要求用户提供下一个 `profile 名称` 和 `App ID`。
+- 如果用户说已全部完成，再询问是否需要执行可选验收案例。
 
 ## 可选验收案例：创建测试日程
 
