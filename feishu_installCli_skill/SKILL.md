@@ -25,6 +25,7 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 - scope 授权一次只输出一组命令；A 组完成后再输出 B 组。
 - 输出给员工的命令使用 `APP_ID_HERE`、`PROFILE_NAME_HERE` 这类占位符，避免使用尖括号包住 APP_ID 这类写法。
 - 如果用户从其他资料看到尖括号包住的内容，必须提醒：左右尖括号也是占位符的一部分，替换后命令里不能留下尖括号。
+- 授权验证通过后，可以提供可选验收案例；验收案例会真实创建日程，必须先征得用户明确同意，不能作为默认必做步骤。
 
 首次回复模板：
 
@@ -229,6 +230,33 @@ Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='PASTE_SCOP
 
 ```shell
 lark-cli --profile PROFILE_NAME_HERE auth status --verify
+```
+
+## 可选验收案例：创建测试日程
+
+授权验证成功后，只有在用户明确同意时，才执行这个验收案例。先告诉用户：这会真实创建一个半小时日程，标题为 `CLI 验证日程`。
+
+执行规则：
+
+- 使用用户当前本地时区，动态计算“明天”的日期；不要硬编码示例日期。
+- 测试时间固定为明天 09:00-09:30。
+- 默认只给当前用户自己创建日程，不邀请其他人。
+- 先查忙闲；如果 09:00-09:30 有冲突，先告诉用户冲突，不要继续创建。
+- 如果忙闲为空，再创建日程，并返回 `event_id`。
+- 单飞书命令不带 `--profile`；多飞书命令必须带 `--profile PROFILE_NAME_HERE`。
+
+单飞书命令模板：
+
+```shell
+lark-cli calendar +freebusy --start "YYYY-MM-DDT09:00:00+08:00" --end "YYYY-MM-DDT09:30:00+08:00" --as user --format json
+lark-cli calendar +create --summary "CLI 验证日程" --start "YYYY-MM-DDT09:00:00+08:00" --end "YYYY-MM-DDT09:30:00+08:00" --as user --format json
+```
+
+多飞书命令模板：
+
+```shell
+lark-cli --profile PROFILE_NAME_HERE calendar +freebusy --start "YYYY-MM-DDT09:00:00+08:00" --end "YYYY-MM-DDT09:30:00+08:00" --as user --format json
+lark-cli --profile PROFILE_NAME_HERE calendar +create --summary "CLI 验证日程" --start "YYYY-MM-DDT09:00:00+08:00" --end "YYYY-MM-DDT09:30:00+08:00" --as user --format json
 ```
 
 ## 权限列表转命令提示词
