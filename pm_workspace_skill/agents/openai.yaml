@@ -1,0 +1,4 @@
+interface:
+  display_name: "PM 工作区底座"
+  short_description: "初始化 PM 本地工作区，定义七维度数据格式与状态流"
+  default_prompt: "使用 $pm_workspace_skill 初始化我的 PM 工作区。"
