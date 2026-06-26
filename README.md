@@ -29,23 +29,11 @@ openSkill/
 npx -y skills add https://github.com/Chanspsyid/openSkill -g --skill feishu_installCli_skill --agent '*' -y
 ```
 
-如果对方使用的工具要求本地安装，也可以先克隆仓库：
-
-```shell
-git clone https://github.com/Chanspsyid/openSkill.git
-cd openSkill
-npx -y skills add . -g --skill feishu_installCli_skill --agent '*' -y
-```
-
 安装后，让对方在 Agent 里使用：
 
 ```text
 使用 $feishu_installCli_skill 输出飞书 CLI 安装和授权命令
 ```
-
-## 将管理员 scope 转成命令
-
-拿到管理员发的权限列表后，可以把 `feishu_installCli_skill/SKILL.md` 里的“权限列表转命令提示词”复制给 AI，让 AI 生成可直接执行的 `auth login --scope` 命令。
 
 ## 注意
 

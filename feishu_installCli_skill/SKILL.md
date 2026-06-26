@@ -294,28 +294,19 @@ lark-cli --profile PROFILE_NAME_HERE calendar +freebusy --start "YYYY-MM-DDT09:0
 lark-cli --profile PROFILE_NAME_HERE calendar +create --summary "CLI 验证日程" --start "YYYY-MM-DDT09:00:00+08:00" --end "YYYY-MM-DDT09:30:00+08:00" --as user --format json
 ```
 
-## 权限列表转命令提示词
+## 权限列表转授权命令
 
-用户拿到管理员发的权限列表后，可以把下面提示词发给 AI，让 AI 整理成可直接复制执行的授权命令。
+当用户拿到管理员发的权限列表、需要转成授权命令时，直接引导用户把权限列表原样贴出来，再按下面规则生成可直接复制执行的 `auth login --scope` 命令。终端类型和单 / 多飞书沿用本次会话已确认的信息，不必重复询问；多飞书使用本场景约定的 `PROFILE_NAME_HERE`。
 
-```text
-请把下面飞书 CLI scope 权限列表整理成可以直接复制执行的授权命令。
+如果用户还没贴出权限列表，先请用户把管理员给的 scope 列表（JSON 或纯文本均可）发出来，再生成命令。
 
-我的场景：
-- 终端：Mac Terminal（zsh）/ Windows PowerShell
-- 是否多飞书：单飞书 / 多飞书
-- profile 名称：PROFILE_NAME_HERE（单飞书留空；多飞书必填）
+生成规则：
 
-要求：
 1. 只生成 `lark-cli auth login --scope` 命令，不要使用 `--recommend`、`--no-wait`、`--json`。
 2. 如果权限数据包含 `scopes.user` 和 `scopes.tenant`，只使用 `scopes.user`。
-3. 如果不是 JSON，按管理员标注为“用户授权”的 scope 处理；不确定时先提醒我确认。
+3. 如果不是 JSON，按管理员标注为“用户授权”的 scope 处理；不确定时先和用户确认。
 4. 去重并保留原 scope 字符串，不翻译、不改名。
 5. 如果 scope 超过 120 个，拆成 Scope A/B/C 多组，每组一条命令。
 6. 单飞书命令不要带 `--profile`；多飞书命令必须带 `--profile PROFILE_NAME_HERE`。
-7. 按我填写的终端只输出一种命令格式。
+7. 按用户本次使用的终端只输出一种命令格式。
 8. 只输出命令块和必要标题，不要解释。
-
-权限列表：
-PASTE_ADMIN_SCOPE_LIST_HERE
-```
