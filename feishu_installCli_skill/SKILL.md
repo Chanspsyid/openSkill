@@ -57,6 +57,7 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 - profile 名称建议只用小写英文、数字、短横线或下划线，例如 `company_a`、`work`、`personal`。
 - 占位符要整段替换。例如把 `APP_ID_HERE` 替换为 `cli_xxxxxxxxxxxxxxxx`，不要把 `APP_ID_HERE` 留在命令里。
 - 开始前确认本机能使用 `npm` 和 `npx`；如果不能用，先安装 Node.js。
+- 同时确认本机已安装 `git`（用 `git --version` 验证）；从 GitHub 安装 Skill 依赖 `git clone`，没有 git 会失败。Windows 默认不带 git，需单独安装 Git for Windows。
 - App Secret 只能在本机终端隐藏输入；不要写进聊天、文档、命令历史或 Skill。
 - 授权命令只使用 `auth login --scope`。
 - 公开仓库只保留 scope 占位符；内部权限清单由管理员私下提供。
