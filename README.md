@@ -5,6 +5,7 @@
 ## 当前 Skill
 
 - `feishu_installCli_skill`：安装飞书 CLI，并按单飞书 / 多飞书场景完成初始化、scope 授权和验证。
+- `prd`：需求文档（PRD）模版与写作工作流，支持初始化新文档、转换已有材料、结构化思考草稿三种模式。
 
 ## 仓库结构
 
@@ -12,6 +13,13 @@
 openSkill/
 ├── feishu_installCli_skill/
 │   ├── SKILL.md
+│   └── agents/
+│       └── openai.yaml
+├── prd/
+│   ├── SKILL.md
+│   ├── references/
+│   │   ├── prd-template.md
+│   │   └── formal-review-template.md
 │   └── agents/
 │       └── openai.yaml
 └── README.md
