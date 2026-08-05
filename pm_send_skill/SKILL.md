@@ -30,7 +30,7 @@ description: 把工作区里已定稿的简报或材料通过飞书发出：创�
 
 ## 接收人管理
 
-- 接收人优先从 `workspace.yaml` 读取（boss / team / reports)；首次给某人发送时，引导用户确认其飞书标识（open_id / 邮箱 / 群），并把映射写入 `workspace.yaml` 的 `feishu.recipients`（新增段，格式 `{名字: {id_type, id}}`）。
+- 接收人优先从 `workspace.yaml` 读取（boss / team / reports）；首次给某人发送时，引导用户确认其飞书标识（open_id / 邮箱 / 群），并把映射写入 `workspace.yaml` 的 `feishu.recipients`（新增段，格式 `{名字: {id_type, id}}`）。
 - 找不到映射时向用户要，不要猜测接收人。
 
 ## 典型流程
