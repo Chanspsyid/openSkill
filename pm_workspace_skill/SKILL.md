@@ -35,13 +35,16 @@ description: 产品经理工作流的共享底座。定义本地工作区目录�
 2. 你的名字（用于简报署名和待办 owner）？
 3. 你的老板称呼、团队名称、下属名单（可以先留空，之后在 workspace.yaml 里补）。
 4. 当前在管的项目列表（可以先填 1~2 个主要项目）。
+5. 你的重点方向：当前阶段的主线是什么？未来范围会收缩到哪里？
+   （这是后续所有建议、风险预警和委派分析的判断依据，建议认真填。）
 ```
 
 ### 步骤 2：创建目录结构
 
 ```text
 pm_workspace/
-├── workspace.yaml          # 工作区配置（人员、项目、飞书数据源、周期锚点）
+├── workspace.yaml          # 工作区配置（人员、项目、重点方向、飞书数据源、周期锚点）
+├── DASHBOARD.md            # 全盘清单：所有维度全部记录的总览（由 pm_track_skill 生成和刷新）
 ├── 00_inbox/               # 收集箱：未分流的原始信息
 ├── 10_info/                # 信息收集：已分流的情报、会议纪要、竞品信息
 ├── 20_decisions/           # 决策记录
@@ -50,6 +53,7 @@ pm_workspace/
 ├── 50_bugs/                # 缺陷
 ├── 60_releases/            # 版本
 ├── 70_projects/            # 项目（每个项目一个文件，含里程碑和风险）
+├── 80_manage/              # 工作量盘点、委派清单、招人论证材料（pm_delegate_skill 产出）
 └── 90_briefs/              # 简报产出
     ├── daily/
     ├── weekly/
@@ -68,6 +72,9 @@ boss: ""                 # 老板称呼
 team: []                 # 团队成员
 reports: []              # 下属名单
 projects: []             # 在管项目，与 70_projects/ 文件一一对应
+focus:                   # 重点方向：建议、风险预警和委派分析的判断依据
+  current: []            # 当前阶段主线，如「产品架构调整、并入集团产品」
+  target: []             # 未来收缩后的范围，如「用户学习场景」「学科教学与服务」
 timezone: Asia/Shanghai
 week_start: monday
 biweekly_anchor: ""      # 双周报锚点周一，如 2026-01-05；第一次生成双周报时确定
@@ -87,8 +94,10 @@ feishu:
 ```text
 工作区已就绪。后续：
 - 收集信息和分流：使用 $pm_capture_skill
-- 管理待办/需求/缺陷/版本/项目：使用 $pm_track_skill
+- 管理待办/需求/缺陷/版本/项目、全盘清单：使用 $pm_track_skill
 - 生成日报/周报/双周报/月报/季报：使用 $pm_brief_skill
+- 工作量盘点、委派分析、招人论证：使用 $pm_delegate_skill
+- 确认后把简报发到飞书：使用 $pm_send_skill
 ```
 
 ## 数据文件约定（其他 Skill 必须遵守）

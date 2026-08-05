@@ -8,14 +8,16 @@
 
 ### PM 工作流套件
 
-产品经理工作流 Skill 套件，本地 Markdown 文件是唯一可信源，飞书作为信息输入源，简报只生成本地文件由用户手动分发：
+产品经理工作流 Skill 套件。本地 Markdown 文件是唯一可信源，飞书作为信息输入源和（确认后的）输出渠道；所有对外内容先生成本人草稿审阅，确认定稿后才派生受众版本、才允许发送：
 
-- `pm_workspace_skill`：共享底座。初始化本地工作区，定义信息/决策/待办/需求/缺陷/版本/项目七个维度的目录、文件格式、ID 和状态流。
+- `pm_workspace_skill`：共享底座。初始化本地工作区，定义信息/决策/待办/需求/缺陷/版本/项目七个维度的目录、文件格式、ID、状态流和重点方向（focus）配置。
 - `pm_capture_skill`：信息收集与分流。把飞书（多维表格、文档、飞书项目、飞书任务）和粘贴内容收进 inbox，再分流到七个维度。依赖 `feishu_installCli_skill` 装好的 lark-cli。
-- `pm_track_skill`：日常事项管理。增删改查、状态推进、巡检（过期/停滞/阻塞/无主）、站会视图，并给出对本人/老板/团队/下属的建议。
-- `pm_brief_skill`：简报生成。按天/周/双周/月/季度聚合数据，先生成本人草稿审阅，确认后派生老板版、团队版、下属版。
+- `pm_track_skill`：日常事项管理。增删改查、状态推进、巡检、站会视图、全盘清单（DASHBOARD.md 个人数据库总览）；建议必出四类：优先级排序、风险预警、沟通建议、焦点对齐。
+- `pm_brief_skill`：简报生成。按天/周/双周/月/季度聚合数据，先本人草稿，确认后派生老板版（工作量快照 + 核心决策与业务影响 + 给老板的参与点）、团队版、下属版。
+- `pm_delegate_skill`：工作量盘点与委派分析。量化工作量给老板看，四象限分析哪些事能分出去，生成招人论证材料。
+- `pm_send_skill`：飞书发送。逐条确认接收人和内容后，把定稿简报/材料以飞书文档或消息发出，绝不自动发送。
 
-推荐使用顺序：`feishu_installCli_skill`（一次性）→ `pm_workspace_skill`（一次性）→ 日常 `pm_capture_skill` + `pm_track_skill` → 周期 `pm_brief_skill`。
+推荐使用顺序：`feishu_installCli_skill`（一次性）→ `pm_workspace_skill`（一次性）→ 日常 `pm_capture_skill` + `pm_track_skill` → 周期 `pm_brief_skill` + `pm_send_skill` → 按需 `pm_delegate_skill`。
 
 ## 仓库结构
 
@@ -35,6 +37,12 @@ openSkill/
 │   ├── SKILL.md
 │   └── agents/openai.yaml
 ├── pm_brief_skill/
+│   ├── SKILL.md
+│   └── agents/openai.yaml
+├── pm_delegate_skill/
+│   ├── SKILL.md
+│   └── agents/openai.yaml
+├── pm_send_skill/
 │   ├── SKILL.md
 │   └── agents/openai.yaml
 └── README.md
