@@ -1,6 +1,6 @@
 ---
 name: feishu_installCli_skill
-description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权和验证。单飞书员工使用官方式默认 profile，不使用代称；多飞书员工使用自定义 profile 名称。授权命令只使用 --scope；支持按管理员提供的 Scope A/B 分组授权。
+description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI/profile 配置、初始化配置、scope 授权和验证。单飞书员工使用官方式默认 profile，不使用代称；多飞书员工使用自定义 profile 名称。授权命令只使用 --scope；支持按管理员提供的 Scope A/B 分组授权和更新已有 scope。
 ---
 
 # 安装飞书 CLI
@@ -13,6 +13,8 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 - 首次回复必须先询问设备类型和未来要连接的飞书数量；在用户回答前不要输出安装、初始化或授权命令。
 - 询问飞书数量时，要说明：只连接 1 个飞书会更简单；如果现在或未来会连接多个飞书，需要使用 profile 区分。
 - 如果用户已经主动说明设备类型或未来连接的飞书数量，只询问缺失项。
+- 用户回答设备和飞书数量后，先做“启动检查与分流”，检查本机依赖、是否已安装 `lark-cli`、以及已有 profile；不要直接进入安装命令。
+- 如果已安装 `lark-cli`，先呈现当前 CLI 版本和已有 profile 的 `name`、`appId`、`user`、`tokenStatus`，能查到应用名称时也展示应用名称；再让用户选择：无需重复安装、配置另一个飞书、或更新某个飞书的 scope。
 - 每次只输出当前步骤的命令和一句操作说明；步骤结束必须引导用户把执行结果告诉 Agent，无论成功或失败。
 - 在确认用户已完成当前步骤目标前，不能进入下一步；如果用户贴出错误，先解释错误并继续处理当前步骤。
 - 如果用户执行报错，停留在当前步骤，要求用户发送终端截图或完整文本报错；Agent 负责根据截图或报错继续排查，直到当前步骤成功后再进入下一步。
@@ -40,7 +42,7 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
    - 现在或以后会连接多个：需要给每个飞书设置 profile，用来区分不同飞书。
 
 可以直接回复：`Mac + 1个`、`Windows + 多个`，或者告诉我你不确定。
-回复后我从第 1 步开始。
+回复后我会先检查电脑环境和已有飞书 CLI 配置，确认是否需要安装。
 ```
 
 每一步结尾固定加一句：
@@ -54,6 +56,7 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 - 飞书CLI官方引导：https://www.feishu.cn/content/article/7623291503305083853
 - 单飞书员工：按官方式默认 profile 配置，不使用代称。
 - 多飞书员工：每个飞书一个 profile，用 `PROFILE_NAME_HERE` 占位符，实际填团队约定的 profile 名称。
+- `lark-cli` 软件本身只需要安装一次；连接多个飞书时不是重复安装 CLI，而是新增不同 profile。
 - profile 名称建议只用小写英文、数字、短横线或下划线，例如 `company_a`、`work`、`personal`。
 - 占位符要整段替换。例如把 `APP_ID_HERE` 替换为 `cli_xxxxxxxxxxxxxxxx`，不要把 `APP_ID_HERE` 留在命令里。
 - 开始前确认本机能使用 `npm` 和 `npx`；如果不能用，先安装 Node.js。
@@ -61,6 +64,81 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 - App Secret 只能在本机终端隐藏输入；不要写进聊天、文档、命令历史或 Skill。
 - 授权命令只使用 `auth login --scope`。
 - 公开仓库只保留 scope 占位符；内部权限清单由管理员私下提供。
+- 员工不需要在飞书开发者后台新建应用或提交新的 CLI 应用申请；App ID、App Secret 和 scope 应由管理员从已有 CLI 应用中提供。
+- 如果用户在浏览器或后台看到“创建应用”“申请应用”“开发者后台配置”等页面，先停止操作，让用户发截图；不要引导员工提交新应用申请。
+
+## 启动检查与分流
+
+### 步骤 1：确认执行方式
+
+```text
+如果 Agent 能执行本机命令：让 Agent 直接执行检查命令。
+如果 Agent 不能执行本机命令：Mac 打开 Terminal（终端）；Windows 打开 PowerShell，不要用 Command Prompt。
+```
+
+### 步骤 2：检查前置环境和现有 CLI
+
+Mac / Windows 都按当前终端执行等价检查；一次只输出当前设备对应命令。
+
+Mac Terminal（zsh）：
+
+```zsh
+node --version
+npm --version
+npx --version
+git --version
+lark-cli --version
+lark-cli profile list
+```
+
+Windows PowerShell：
+
+```powershell
+node --version
+npm --version
+npx --version
+git --version
+lark-cli --version
+lark-cli profile list
+```
+
+Agent 需要判断：
+
+- `node` / `npm` / `npx` 不可用：先让用户安装 Node.js，再回到本步骤。
+- `git` 不可用：先让用户安装 Git，再回到本步骤。
+- `lark-cli` 不可用：进入对应场景的“安装 CLI（仅未安装时）”。
+- `lark-cli profile list` 已有配置：整理当前配置，再让用户选择下一步。
+
+### 步骤 3：已有配置时让用户确认下一步
+
+如果已安装 `lark-cli`，用简短列表呈现当前配置：
+
+```text
+检测到已安装 lark-cli：vX.X.X
+
+当前已有飞书配置：
+- profile/name: xxx；appId: cli_xxx；用户: xxx；状态: valid/needs_refresh/unknown；应用名称: xxx（如能查到）
+
+请选择下一步：
+a. 无需重复安装，直接使用现有配置
+b. 配置另一个飞书（需要新的 profile 名称，建议小写英文）
+c. 更新某个飞书的 scope 授权
+```
+
+分流规则：
+
+- 选 `a`：如果状态是 `valid`，说明无需重复安装；可询问是否执行可选验收案例。若状态不是 `valid`，引导到验证或更新 scope。
+- 选 `b`：多飞书场景要求用户提供新的 `profile 名称` 和 `App ID`，再进入多飞书“初始化配置”；单飞书场景如果要新增另一个飞书，先切换到多飞书流程。
+- 选 `c`：先确认要更新哪个 profile；单飞书默认不带 `--profile`，多飞书必须带 `--profile PROFILE_NAME_HERE`，然后进入“授权”。
+
+### 防止误申请新应用
+
+当用户说“我是不是要申请应用”“页面让我新建应用”“管理员让我申请 CLI 应用”时，先澄清：
+
+- 普通员工只需要使用管理员提供的已有 CLI 应用信息，不需要新建应用。
+- 缺少 App ID、App Secret 或 scope 时，应找管理员补齐，不要自己创建应用。
+- 管理员应发放一份资料包：飞书名称、建议 profile 名称、App ID、App Secret 的安全交付方式、Scope A/B/C、以及“不要新建应用，只做授权”的提醒。
+- 如果确实要新增公司级 CLI 应用，应由飞书管理员统一创建、开权限和发布；不要让每个员工各自提交申请。
 
 ## 场景 1：单飞书员工
 
@@ -71,7 +149,9 @@ description: 分步引导安装飞书/Lark CLI、初始化配置、scope 授权�
 如果 Agent 不能执行本机命令：Mac 打开 Terminal（终端）；Windows 打开 PowerShell，不要用 Command Prompt。
 ```
 
-### 步骤 2：安装 CLI
+### 步骤 2：安装 CLI（仅未安装时）
+
+只有“启动检查与分流”确认 `lark-cli` 未安装或不可用时，才执行安装；已安装时不要重复安装，按用户选择进入初始化、授权或结束。
 
 ```shell
 npm install -g @larksuite/cli
@@ -165,7 +245,9 @@ Agent 需要确认：
 如果 Agent 不能执行本机命令：Mac 打开 Terminal（终端）；Windows 打开 PowerShell，不要用 Command Prompt。
 ```
 
-### 步骤 2：安装 CLI
+### 步骤 2：安装 CLI（仅未安装时）
+
+只有“启动检查与分流”确认 `lark-cli` 未安装或不可用时，才执行安装；已安装时不要重复安装，按用户选择进入初始化、授权或结束。
 
 ```shell
 npm install -g @larksuite/cli
