@@ -1,6 +1,6 @@
 ---
 name: feishu_installCli_skill
-description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI/profile 配置、初始化配置、scope 授权和验证。单飞书员工使用官方式默认 profile，不使用代称；多飞书员工使用自定义 profile 名称。授权命令只使用 --scope；支持按管理员提供的 Scope A/B 分组授权、更新已有 scope，以及中国境内网络的 npm/GitHub 镜像分流。
+description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI/profile 配置、初始化配置、scope 授权和验证。单飞书员工使用官方式默认 profile，不使用代称；多飞书员工使用自定义 profile 名称。授权命令只使用 --scope；支持按管理员提供的 Scope A/B 分组授权、更新已有 scope，以及中国境内网络的 npmmirror/Gitee 镜像分流。
 ---
 
 # 安装飞书 CLI
@@ -20,7 +20,7 @@ description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI
 - 如果用户执行报错，停留在当前步骤，要求用户发送终端截图或完整文本报错；Agent 负责根据截图或报错继续排查，直到当前步骤成功后再进入下一步。
 - 如果 Agent 具备本机命令执行能力，优先由 Agent 执行安装、检查、验证命令；如果不能执行，再让用户打开终端复制命令。
 - 如果用户设备是 Windows，输出给 PowerShell 的所有飞书 CLI 命令都必须使用 `lark-cli.cmd`；只有 Mac 命令才使用 `lark-cli`。
-- 如果用户在中国境内，或安装命令出现下载超时、网络连接失败、GitHub 无法访问，先进入“境内网络与镜像处理”，不要反复重试原命令。
+- 如果用户在中国境内，或安装命令出现下载超时、网络连接失败、GitHub/Gitee 无法访问，先进入“境内网络与镜像处理”，不要反复重试原命令。
 - 需要浏览器授权时，给用户授权链接并等待用户完成。
 - 不要让用户把 App Secret 发到聊天里；只给本机隐藏输入方式。
 - 用户手动替换命令占位符后，先让用户把修改后的命令发给 Agent 确认；Agent 检查无误后，再让用户执行。
@@ -64,7 +64,7 @@ description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI
 - 开始前确认本机能使用 `npm` 和 `npx`；如果不能用，先安装 Node.js。
 - 同时确认本机已安装 `git`（用 `git --version` 验证）；从 GitHub 安装 Skill 依赖 `git clone`，没有 git 会失败。Windows 默认不带 git，需单独安装 Git for Windows。
 - 中国境内员工如果 npm/npx 下载慢、超时或失败，先把 npm registry 设置为 `https://registry.npmmirror.com`。
-- 如果 GitHub 无法访问，管理员应提供公司可信的 Skill 镜像仓库地址；不要推荐员工使用来历不明的公共 GitHub 代理地址。
+- 中国境内员工优先使用 Gitee 镜像仓库安装 Skill；不要推荐员工使用来历不明的公共 GitHub 代理地址。
 - Windows PowerShell 中调用飞书 CLI 时优先使用 `lark-cli.cmd`，不要使用 `lark-cli`；这样可以避开公司电脑常见的 PowerShell 脚本执行策略限制。
 - App Secret 只能在本机终端隐藏输入；不要写进聊天、文档、命令历史或 Skill。
 - 授权命令只使用 `auth login --scope`。
@@ -155,7 +155,7 @@ c. 更新某个飞书的 scope 授权
 
 - 用户在中国境内，且 npm/npx 下载很慢或失败。
 - 命令报错包含 `ETIMEDOUT`、`ECONNRESET`、`network timeout`、`fetch failed`、`Could not resolve host`。
-- 安装 Skill 时无法访问 GitHub。
+- 安装 Skill 时无法访问 GitHub，或需要给中国境内员工提供更稳定的安装地址。
 
 ### 步骤 1：设置 npm 镜像
 
@@ -177,19 +177,33 @@ Agent 需要确认：
 npm config set registry https://registry.npmjs.org
 ```
 
-### 步骤 2：GitHub 不通时使用公司镜像仓库
+### 步骤 2：GitHub 不通时使用 Gitee 镜像仓库
 
-如果 `skills add https://github.com/...` 失败，先确认管理员是否提供了公司可信镜像仓库地址。
+默认推荐使用 Gitee 作为中国境内 Skill 镜像仓库。
 
-不要引导员工使用随机公共 GitHub 代理。让管理员提供镜像地址后，把命令里的 `SKILL_REPO_URL_HERE` 整段替换为镜像仓库地址：
+管理员先在 Gitee 创建公开镜像仓库，建议仓库名保持 `openSkill`。镜像地址格式：
+
+```text
+https://gitee.com/GITEE_USER_OR_ORG/openSkill.git
+```
+
+然后让员工执行下面命令；把 `GITEE_USER_OR_ORG` 替换为实际 Gitee 用户名或组织名：
+
+```shell
+npx -y skills add https://gitee.com/GITEE_USER_OR_ORG/openSkill.git -g --skill feishu_installCli_skill --agent '*' -y
+```
+
+如果公司已有内部 Git 服务，也可以使用内部镜像仓库；把下面命令里的 `SKILL_REPO_URL_HERE` 整段替换为内部仓库地址：
 
 ```shell
 npx -y skills add SKILL_REPO_URL_HERE -g --skill feishu_installCli_skill --agent '*' -y
 ```
 
+不要引导员工使用随机公共 GitHub 代理。
+
 Agent 需要确认：
 
-- `SKILL_REPO_URL_HERE` 已被完整替换。
+- `GITEE_USER_OR_ORG` 或 `SKILL_REPO_URL_HERE` 已被完整替换。
 - 镜像仓库里包含 `feishu_installCli_skill/SKILL.md`。
 - 安装成功后，继续进入“启动检查与分流”。
 

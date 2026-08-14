@@ -32,13 +32,25 @@ openSkill/
 > - macOS 首次运行 `git` 会弹出"安装命令行工具"，按提示装即可；Windows 默认不带 git，需单独安装 [Git for Windows](https://git-scm.com/download/win)。
 > - 中国境内网络如果 npm/npx 下载慢或失败，先执行：`npm config set registry https://registry.npmmirror.com`。
 
-把 GitHub 仓库地址发给对方，并告诉对方执行：
+中国境内员工优先使用 Gitee 镜像。管理员先在 Gitee 创建公开镜像仓库，建议仓库名保持 `openSkill`，例如：
+
+```text
+https://gitee.com/GITEE_USER_OR_ORG/openSkill.git
+```
+
+然后把下面命令里的 `GITEE_USER_OR_ORG` 替换为实际 Gitee 用户名或组织名，再发给员工执行：
+
+```shell
+npx -y skills add https://gitee.com/GITEE_USER_OR_ORG/openSkill.git -g --skill feishu_installCli_skill --agent '*' -y
+```
+
+如果员工可以访问 GitHub，也可以直接使用 GitHub 仓库：
 
 ```shell
 npx -y skills add https://github.com/Chanspsyid/openSkill -g --skill feishu_installCli_skill --agent '*' -y
 ```
 
-如果 GitHub 访问失败，不要使用来历不明的公共代理。管理员应提供公司可信镜像仓库地址，然后把下面命令里的 `SKILL_REPO_URL_HERE` 替换为镜像仓库地址：
+不要使用来历不明的公共 GitHub 代理。如果公司已有内部 Git 服务，也可以把仓库同步到内部 Git，并替换下面命令里的 `SKILL_REPO_URL_HERE`：
 
 ```shell
 npx -y skills add SKILL_REPO_URL_HERE -g --skill feishu_installCli_skill --agent '*' -y
