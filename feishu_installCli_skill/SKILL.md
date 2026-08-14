@@ -64,7 +64,7 @@ description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI
 - 开始前确认本机能使用 `npm` 和 `npx`；如果不能用，先安装 Node.js。
 - 同时确认本机已安装 `git`（用 `git --version` 验证）；从 GitHub 安装 Skill 依赖 `git clone`，没有 git 会失败。Windows 默认不带 git，需单独安装 Git for Windows。
 - 中国境内员工如果 npm/npx 下载慢、超时或失败，先把 npm registry 设置为 `https://registry.npmmirror.com`。
-- 中国境内员工优先使用 Gitee 镜像仓库安装 Skill；不要推荐员工使用来历不明的公共 GitHub 代理地址。
+- 中国境内员工优先使用已同步的 Gitee 镜像仓库 `https://gitee.com/wenider/open-skill.git` 安装 Skill；不要推荐员工使用来历不明的公共 GitHub 代理地址。
 - Windows PowerShell 中调用飞书 CLI 时优先使用 `lark-cli.cmd`，不要使用 `lark-cli`；这样可以避开公司电脑常见的 PowerShell 脚本执行策略限制。
 - App Secret 只能在本机终端隐藏输入；不要写进聊天、文档、命令历史或 Skill。
 - 授权命令只使用 `auth login --scope`。
@@ -179,18 +179,10 @@ npm config set registry https://registry.npmjs.org
 
 ### 步骤 2：GitHub 不通时使用 Gitee 镜像仓库
 
-默认推荐使用 Gitee 作为中国境内 Skill 镜像仓库。
-
-管理员先在 Gitee 创建公开镜像仓库，建议仓库名保持 `openSkill`。镜像地址格式：
-
-```text
-https://gitee.com/GITEE_USER_OR_ORG/openSkill.git
-```
-
-然后让员工执行下面命令；把 `GITEE_USER_OR_ORG` 替换为实际 Gitee 用户名或组织名：
+默认使用已同步的 Gitee 镜像仓库：
 
 ```shell
-npx -y skills add https://gitee.com/GITEE_USER_OR_ORG/openSkill.git -g --skill feishu_installCli_skill --agent '*' -y
+npx -y skills add https://gitee.com/wenider/open-skill.git -g --skill feishu_installCli_skill --agent '*' -y
 ```
 
 如果公司已有内部 Git 服务，也可以使用内部镜像仓库；把下面命令里的 `SKILL_REPO_URL_HERE` 整段替换为内部仓库地址：
@@ -203,7 +195,8 @@ npx -y skills add SKILL_REPO_URL_HERE -g --skill feishu_installCli_skill --agent
 
 Agent 需要确认：
 
-- `GITEE_USER_OR_ORG` 或 `SKILL_REPO_URL_HERE` 已被完整替换。
+- 使用 Gitee 默认命令时，不需要替换仓库地址。
+- 使用内部 Git 镜像时，`SKILL_REPO_URL_HERE` 已被完整替换。
 - 镜像仓库里包含 `feishu_installCli_skill/SKILL.md`。
 - 安装成功后，继续进入“启动检查与分流”。
 
