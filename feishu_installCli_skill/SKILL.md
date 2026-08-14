@@ -19,6 +19,7 @@ description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI
 - 在确认用户已完成当前步骤目标前，不能进入下一步；如果用户贴出错误，先解释错误并继续处理当前步骤。
 - 如果用户执行报错，停留在当前步骤，要求用户发送终端截图或完整文本报错；Agent 负责根据截图或报错继续排查，直到当前步骤成功后再进入下一步。
 - 如果 Agent 具备本机命令执行能力，优先由 Agent 执行安装、检查、验证命令；如果不能执行，再让用户打开终端复制命令。
+- 如果用户设备是 Windows，输出给 PowerShell 的所有飞书 CLI 命令都必须使用 `lark-cli.cmd`；只有 Mac 命令才使用 `lark-cli`。
 - 需要浏览器授权时，给用户授权链接并等待用户完成。
 - 不要让用户把 App Secret 发到聊天里；只给本机隐藏输入方式。
 - 用户手动替换命令占位符后，先让用户把修改后的命令发给 Agent 确认；Agent 检查无误后，再让用户执行。
@@ -61,6 +62,7 @@ description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI
 - 占位符要整段替换。例如把 `APP_ID_HERE` 替换为 `cli_xxxxxxxxxxxxxxxx`，不要把 `APP_ID_HERE` 留在命令里。
 - 开始前确认本机能使用 `npm` 和 `npx`；如果不能用，先安装 Node.js。
 - 同时确认本机已安装 `git`（用 `git --version` 验证）；从 GitHub 安装 Skill 依赖 `git clone`，没有 git 会失败。Windows 默认不带 git，需单独安装 Git for Windows。
+- Windows PowerShell 中调用飞书 CLI 时优先使用 `lark-cli.cmd`，不要使用 `lark-cli`；这样可以避开公司电脑常见的 PowerShell 脚本执行策略限制。
 - App Secret 只能在本机终端隐藏输入；不要写进聊天、文档、命令历史或 Skill。
 - 授权命令只使用 `auth login --scope`。
 - 公开仓库只保留 scope 占位符；内部权限清单由管理员私下提供。
@@ -98,8 +100,8 @@ node --version
 npm --version
 npx --version
 git --version
-lark-cli --version
-lark-cli profile list
+lark-cli.cmd --version
+lark-cli.cmd profile list
 ```
 
 Agent 需要判断：
@@ -108,6 +110,7 @@ Agent 需要判断：
 - `git` 不可用：先让用户安装 Git，再回到本步骤。
 - `lark-cli` 不可用：进入对应场景的“安装 CLI（仅未安装时）”。
 - `lark-cli profile list` 已有配置：整理当前配置，再让用户选择下一步。
+- Windows 报错 `PSSecurityException`、`UnauthorizedAccess`、`无法加载文件 ... lark-cli.ps1` 或提示系统禁止运行脚本：不要改执行策略，先把命令里的 `lark-cli` 改成 `lark-cli.cmd` 后重试。
 
 ### 步骤 3：已有配置时让用户确认下一步
 
@@ -181,7 +184,7 @@ $AppSecret = Read-Host -Prompt "App Secret" -AsSecureString
 $Bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($AppSecret)
 try {
   $PlainSecret = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($Bstr)
-  $PlainSecret | lark-cli config init --brand feishu --app-id "APP_ID_HERE" --app-secret-stdin
+  $PlainSecret | lark-cli.cmd config init --brand feishu --app-id "APP_ID_HERE" --app-secret-stdin
 } finally {
   if ($Bstr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($Bstr) }
   Remove-Variable AppSecret, PlainSecret -ErrorAction SilentlyContinue
@@ -212,7 +215,7 @@ SCOPES_B='PASTE_SCOPE_GROUP_B_HERE'
 lark-cli auth login --scope "$SCOPES_B"
 ```
 
-Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='PASTE_SCOPE_GROUP_A_HERE'` 改成 `$SCOPES_A = 'PASTE_SCOPE_GROUP_A_HERE'`，命令改成 `lark-cli auth login --scope $SCOPES_A`。
+Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='PASTE_SCOPE_GROUP_A_HERE'` 改成 `$SCOPES_A = 'PASTE_SCOPE_GROUP_A_HERE'`，命令改成 `lark-cli.cmd auth login --scope $SCOPES_A`。
 
 ### 步骤 6：验证
 
@@ -289,7 +292,7 @@ $AppSecret = Read-Host -Prompt "PROFILE_NAME_HERE App Secret" -AsSecureString
 $Bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($AppSecret)
 try {
   $PlainSecret = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($Bstr)
-  $PlainSecret | lark-cli config init --name PROFILE_NAME_HERE --brand feishu --app-id "APP_ID_HERE" --app-secret-stdin
+  $PlainSecret | lark-cli.cmd config init --name PROFILE_NAME_HERE --brand feishu --app-id "APP_ID_HERE" --app-secret-stdin
 } finally {
   if ($Bstr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($Bstr) }
   Remove-Variable AppSecret, PlainSecret -ErrorAction SilentlyContinue
@@ -320,7 +323,7 @@ SCOPES_B='PASTE_SCOPE_GROUP_B_HERE'
 lark-cli --profile PROFILE_NAME_HERE auth login --scope "$SCOPES_B"
 ```
 
-Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='PASTE_SCOPE_GROUP_A_HERE'` 改成 `$SCOPES_A = 'PASTE_SCOPE_GROUP_A_HERE'`，命令改成 `lark-cli --profile PROFILE_NAME_HERE auth login --scope $SCOPES_A`。
+Windows PowerShell：使用同一份 scope 字符串，把 `SCOPES_A='PASTE_SCOPE_GROUP_A_HERE'` 改成 `$SCOPES_A = 'PASTE_SCOPE_GROUP_A_HERE'`，命令改成 `lark-cli.cmd --profile PROFILE_NAME_HERE auth login --scope $SCOPES_A`。
 
 ### 步骤 6：验证
 
@@ -384,7 +387,7 @@ lark-cli --profile PROFILE_NAME_HERE calendar +create --summary "CLI 验证日�
 
 生成规则：
 
-1. 只生成 `lark-cli auth login --scope` 命令，不要使用 `--recommend`、`--no-wait`、`--json`。
+1. 只生成 `auth login --scope` 命令，不要使用 `--recommend`、`--no-wait`、`--json`；Mac 使用 `lark-cli`，Windows PowerShell 使用 `lark-cli.cmd`。
 2. 如果权限数据包含 `scopes.user` 和 `scopes.tenant`，只使用 `scopes.user`。
 3. 如果不是 JSON，按管理员标注为“用户授权”的 scope 处理；不确定时先和用户确认。
 4. 去重并保留原 scope 字符串，不翻译、不改名。
