@@ -30,11 +30,18 @@ openSkill/
 > 前置依赖：对方电脑需先装好 **Node.js**（提供 `npm` / `npx`）和 **git**。下面的安装命令会用 `git clone` 拉取本仓库，没有 git 会直接报错。
 > - 验证：`node -v` 和 `git --version` 都能正常输出即可。
 > - macOS 首次运行 `git` 会弹出"安装命令行工具"，按提示装即可；Windows 默认不带 git，需单独安装 [Git for Windows](https://git-scm.com/download/win)。
+> - 中国境内网络如果 npm/npx 下载慢或失败，先执行：`npm config set registry https://registry.npmmirror.com`。
 
 把 GitHub 仓库地址发给对方，并告诉对方执行：
 
 ```shell
 npx -y skills add https://github.com/Chanspsyid/openSkill -g --skill feishu_installCli_skill --agent '*' -y
+```
+
+如果 GitHub 访问失败，不要使用来历不明的公共代理。管理员应提供公司可信镜像仓库地址，然后把下面命令里的 `SKILL_REPO_URL_HERE` 替换为镜像仓库地址：
+
+```shell
+npx -y skills add SKILL_REPO_URL_HERE -g --skill feishu_installCli_skill --agent '*' -y
 ```
 
 安装后，让对方在 Agent 里使用：
