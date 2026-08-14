@@ -1,6 +1,6 @@
 ---
 name: feishu_installCli_skill
-description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI/profile 配置、初始化配置、scope 授权和验证。单飞书员工使用官方式默认 profile，不使用代称；多飞书员工使用自定义 profile 名称。授权命令只使用 --scope；支持按管理员提供的 Scope A/B 分组授权和更新已有 scope。
+description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI/profile 配置、初始化配置、scope 授权和验证。单飞书员工使用官方式默认 profile，不使用代称；多飞书员工使用自定义 profile 名称。授权命令只使用 --scope；支持按管理员提供的 Scope A/B 分组授权、更新已有 scope，以及中国境内网络的 npm/GitHub 镜像分流。
 ---
 
 # 安装飞书 CLI
@@ -20,6 +20,7 @@ description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI
 - 如果用户执行报错，停留在当前步骤，要求用户发送终端截图或完整文本报错；Agent 负责根据截图或报错继续排查，直到当前步骤成功后再进入下一步。
 - 如果 Agent 具备本机命令执行能力，优先由 Agent 执行安装、检查、验证命令；如果不能执行，再让用户打开终端复制命令。
 - 如果用户设备是 Windows，输出给 PowerShell 的所有飞书 CLI 命令都必须使用 `lark-cli.cmd`；只有 Mac 命令才使用 `lark-cli`。
+- 如果用户在中国境内，或安装命令出现下载超时、网络连接失败、GitHub 无法访问，先进入“境内网络与镜像处理”，不要反复重试原命令。
 - 需要浏览器授权时，给用户授权链接并等待用户完成。
 - 不要让用户把 App Secret 发到聊天里；只给本机隐藏输入方式。
 - 用户手动替换命令占位符后，先让用户把修改后的命令发给 Agent 确认；Agent 检查无误后，再让用户执行。
@@ -62,6 +63,8 @@ description: 分步引导安装飞书/Lark CLI、检查本机依赖和已有 CLI
 - 占位符要整段替换。例如把 `APP_ID_HERE` 替换为 `cli_xxxxxxxxxxxxxxxx`，不要把 `APP_ID_HERE` 留在命令里。
 - 开始前确认本机能使用 `npm` 和 `npx`；如果不能用，先安装 Node.js。
 - 同时确认本机已安装 `git`（用 `git --version` 验证）；从 GitHub 安装 Skill 依赖 `git clone`，没有 git 会失败。Windows 默认不带 git，需单独安装 Git for Windows。
+- 中国境内员工如果 npm/npx 下载慢、超时或失败，先把 npm registry 设置为 `https://registry.npmmirror.com`。
+- 如果 GitHub 无法访问，管理员应提供公司可信的 Skill 镜像仓库地址；不要推荐员工使用来历不明的公共 GitHub 代理地址。
 - Windows PowerShell 中调用飞书 CLI 时优先使用 `lark-cli.cmd`，不要使用 `lark-cli`；这样可以避开公司电脑常见的 PowerShell 脚本执行策略限制。
 - App Secret 只能在本机终端隐藏输入；不要写进聊天、文档、命令历史或 Skill。
 - 授权命令只使用 `auth login --scope`。
@@ -89,6 +92,7 @@ node --version
 npm --version
 npx --version
 git --version
+npm config get registry
 lark-cli --version
 lark-cli profile list
 ```
@@ -100,6 +104,7 @@ node --version
 npm --version
 npx --version
 git --version
+npm config get registry
 lark-cli.cmd --version
 lark-cli.cmd profile list
 ```
@@ -110,6 +115,7 @@ Agent 需要判断：
 - `git` 不可用：先让用户安装 Git，再回到本步骤。
 - `lark-cli` 不可用：进入对应场景的“安装 CLI（仅未安装时）”。
 - `lark-cli profile list` 已有配置：整理当前配置，再让用户选择下一步。
+- `npm config get registry` 是官方 npm 源且用户在中国境内，或安装时出现网络失败：进入“境内网络与镜像处理”。
 - Windows 报错 `PSSecurityException`、`UnauthorizedAccess`、`无法加载文件 ... lark-cli.ps1` 或提示系统禁止运行脚本：不要改执行策略，先把命令里的 `lark-cli` 改成 `lark-cli.cmd` 后重试。
 
 ### 步骤 3：已有配置时让用户确认下一步
@@ -143,6 +149,50 @@ c. 更新某个飞书的 scope 授权
 - 管理员应发放一份资料包：飞书名称、建议 profile 名称、App ID、App Secret 的安全交付方式、Scope A/B/C、以及“不要新建应用，只做授权”的提醒。
 - 如果确实要新增公司级 CLI 应用，应由飞书管理员统一创建、开权限和发布；不要让每个员工各自提交申请。
 
+## 境内网络与镜像处理
+
+触发条件：
+
+- 用户在中国境内，且 npm/npx 下载很慢或失败。
+- 命令报错包含 `ETIMEDOUT`、`ECONNRESET`、`network timeout`、`fetch failed`、`Could not resolve host`。
+- 安装 Skill 时无法访问 GitHub。
+
+### 步骤 1：设置 npm 镜像
+
+Mac Terminal 和 Windows PowerShell 使用同一组命令：
+
+```shell
+npm config set registry https://registry.npmmirror.com
+npm config get registry
+```
+
+Agent 需要确认：
+
+- 输出是 `https://registry.npmmirror.com` 或 `https://registry.npmmirror.com/`。
+- 确认后回到原步骤，重新执行刚才失败的 npm/npx 命令。
+
+如果用户后续要恢复官方 npm 源，再单独给这条命令：
+
+```shell
+npm config set registry https://registry.npmjs.org
+```
+
+### 步骤 2：GitHub 不通时使用公司镜像仓库
+
+如果 `skills add https://github.com/...` 失败，先确认管理员是否提供了公司可信镜像仓库地址。
+
+不要引导员工使用随机公共 GitHub 代理。让管理员提供镜像地址后，把命令里的 `SKILL_REPO_URL_HERE` 整段替换为镜像仓库地址：
+
+```shell
+npx -y skills add SKILL_REPO_URL_HERE -g --skill feishu_installCli_skill --agent '*' -y
+```
+
+Agent 需要确认：
+
+- `SKILL_REPO_URL_HERE` 已被完整替换。
+- 镜像仓库里包含 `feishu_installCli_skill/SKILL.md`。
+- 安装成功后，继续进入“启动检查与分流”。
+
 ## 场景 1：单飞书员工
 
 ### 步骤 1：确认执行方式
@@ -155,6 +205,7 @@ c. 更新某个飞书的 scope 授权
 ### 步骤 2：安装 CLI（仅未安装时）
 
 只有“启动检查与分流”确认 `lark-cli` 未安装或不可用时，才执行安装；已安装时不要重复安装，按用户选择进入初始化、授权或结束。
+中国境内员工或 npm/npx 下载失败时，先进入“境内网络与镜像处理”的 npm 镜像步骤，再回到本步骤。
 
 ```shell
 npm install -g @larksuite/cli
@@ -251,6 +302,7 @@ Agent 需要确认：
 ### 步骤 2：安装 CLI（仅未安装时）
 
 只有“启动检查与分流”确认 `lark-cli` 未安装或不可用时，才执行安装；已安装时不要重复安装，按用户选择进入初始化、授权或结束。
+中国境内员工或 npm/npx 下载失败时，先进入“境内网络与镜像处理”的 npm 镜像步骤，再回到本步骤。
 
 ```shell
 npm install -g @larksuite/cli
